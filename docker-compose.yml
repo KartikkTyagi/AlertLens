@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16
+    container_name: alertlens-db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_DB: alertlens
+      POSTGRES_USER: alertlens
+      POSTGRES_PASSWORD: alertlens_dev_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: alertlens-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./.env
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://alertlens:alertlens_dev_password@db:5432/alertlens}
+      - SECRET_KEY=${SECRET_KEY:-alertlens-dev-secret-key-32bytes-long-super-secure-change-in-production-2026}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - GROQ_MODEL=${GROQ_MODEL:-qwen/qwen3.8-27b}
+      - ENABLE_DEMO_USERS=${ENABLE_DEMO_USERS:-true}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: alertlens-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

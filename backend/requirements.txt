@@ -1,0 +1,20 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic
+python-dotenv
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.5.0+cpu
+sentence-transformers
+scikit-learn
+pandas
+numpy
+networkx
+websockets
+python-jose[cryptography]
+passlib[bcrypt]
+pytest
+httpx
+groq
+asyncpg
